@@ -3,6 +3,7 @@ import { User } from '@prisma/client';
 
 import { AuthService } from './auth.service';
 import { SignupDto } from './dto/signup.dto';
+import { LoginDto } from './dto/login.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -11,5 +12,10 @@ export class AuthController {
   @Post('signup')
   signup(@Body() signupDto: SignupDto): Promise<User> {
     return this.authService.signup(signupDto);
+  }
+
+  @Post('login')
+  login(@Body() loginDto: LoginDto): Promise<{ accessToken: string }> {
+    return this.authService.login(loginDto);
   }
 }
