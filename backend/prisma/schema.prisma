@@ -1,83 +1,76 @@
-// Prisma Client 생성 설정
 generator client {
   provider = "prisma-client-js"
 }
 
-// PostgreSQL DB 연결
 datasource db {
   provider = "postgresql"
-}
-
-// 유저 역할: 멘토 / 멘티
-enum UserRole {
-  MENTOR
-  MENTEE
-}
-
-// 커피챗 상태: 대기 / 승인 / 거절
-enum CoffeeChatStatus {
-  PENDING
-  APPROVED
-  REJECTED
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String
-  name      String
-  role      UserRole
-  headline  String? // 한 줄 소개
-  bio       String? // 상세 소개
-  techStack String[] // 기술 스택
-  createdAt DateTime @default(now())
-
-  mentorSlots MentorTimeSlot[]
-  mentorChats CoffeeChat[]     @relation("MentorChats")
+  id          Int              @id @default(autoincrement())
+  email       String           @unique
+  password    String
+  name        String
+  role        UserRole
+  headline    String?
+  bio         String?
+  techStack   String[]
+  createdAt   DateTime         @default(now())
   menteeChats CoffeeChat[]     @relation("MenteeChats")
+  mentorChats CoffeeChat[]     @relation("MentorChats")
+  mentorSlots MentorTimeSlot[]
   messages    Message[]
 }
 
 model MentorTimeSlot {
-  id         Int      @id @default(autoincrement())
+  id         Int         @id @default(autoincrement())
   mentorId   Int
-  mentor     User     @relation(fields: [mentorId], references: [id])
   startTime  DateTime
-  isReserved Boolean  @default(false) // 예약 여부
-  createdAt  DateTime @default(now())
-
+  isReserved Boolean     @default(false)
+  createdAt  DateTime    @default(now())
   coffeeChat CoffeeChat?
+  mentor     User        @relation(fields: [mentorId], references: [id])
 }
 
 model CoffeeChat {
   id         Int              @id @default(autoincrement())
   mentorId   Int
-  mentor     User             @relation("MentorChats", fields: [mentorId], references: [id])
   menteeId   Int
-  mentee     User             @relation("MenteeChats", fields: [menteeId], references: [id])
   timeSlotId Int              @unique
-  timeSlot   MentorTimeSlot   @relation(fields: [timeSlotId], references: [id])
   status     CoffeeChatStatus @default(PENDING)
   createdAt  DateTime         @default(now())
-
-  chatRoom ChatRoom? // 승인 시 ChatRoom 생성
+  chatRoom   ChatRoom?
+  mentee     User             @relation("MenteeChats", fields: [menteeId], references: [id])
+  mentor     User             @relation("MentorChats", fields: [mentorId], references: [id])
+  timeSlot   MentorTimeSlot   @relation(fields: [timeSlotId], references: [id])
 }
 
 model ChatRoom {
   id           Int        @id @default(autoincrement())
   coffeeChatId Int        @unique
-  coffeeChat   CoffeeChat @relation(fields: [coffeeChatId], references: [id])
   createdAt    DateTime   @default(now())
-
-  messages Message[]
+  coffeeChat   CoffeeChat @relation(fields: [coffeeChatId], references: [id])
+  messages     Message[]
 }
 
 model Message {
   id         Int      @id @default(autoincrement())
   chatRoomId Int
-  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id])
   senderId   Int
-  sender     User     @relation(fields: [senderId], references: [id])
   content    String
   createdAt  DateTime @default(now())
+  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id])
+  sender     User     @relation(fields: [senderId], references: [id])
+}
+
+enum UserRole {
+  MENTOR
+  MENTEE
+}
+
+enum CoffeeChatStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
