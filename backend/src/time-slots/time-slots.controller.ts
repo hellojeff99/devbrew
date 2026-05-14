@@ -1,4 +1,13 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { TimeSlotsService } from './time-slots.service';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CreateTimeSlotDto } from './dto/create-time-slot.dto';
@@ -22,5 +31,10 @@ export class TimeSlotsController {
       mentorId: request.user.sub,
       startTime: dto.startTime,
     });
+  }
+
+  @Get(':mentorId')
+  getMentorSlots(@Param('mentorId', ParseIntPipe) mentorId: number) {
+    return this.timeSlotsService.getAvailableSlotsByMentorId(mentorId);
   }
 }

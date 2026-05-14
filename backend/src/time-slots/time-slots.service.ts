@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { UserRole } from '@prisma/client';
@@ -55,6 +56,46 @@ export class TimeSlotsService {
       data: {
         mentorId: input.mentorId,
         startTime,
+      },
+    });
+  }
+
+  async getAvailableSlotsByMentorId(mentorId: number) {
+    const mentor = await this.prisma.user.findFirst({
+      where: {
+        id: mentorId,
+        role: UserRole.MENTOR,
+      },
+
+      select: {
+        id: true,
+      },
+    });
+
+    if (!mentor) {
+      throw new NotFoundException('Mentor not found');
+    }
+
+    return this.prisma.mentorTimeSlot.findMany({
+      where: {
+        mentorId,
+        isReserved: false,
+
+        startTime: {
+          gt: new Date(),
+        },
+      },
+
+      orderBy: {
+        startTime: 'asc',
+      },
+
+      select: {
+        id: true,
+        mentorId: true,
+        startTime: true,
+        isReserved: true,
+        createdAt: true,
       },
     });
   }
