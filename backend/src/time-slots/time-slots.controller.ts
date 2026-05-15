@@ -13,7 +13,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CreateTimeSlotDto } from './dto/create-time-slot.dto';
 import { JwtPayload } from '../auth/jwt.strategy';
 
-type AuthenticatedRequest = Request & {
+type AuthRequest = Request & {
   user: JwtPayload;
 };
 
@@ -23,10 +23,7 @@ export class TimeSlotsController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  craeteTimeSlot(
-    @Req() request: AuthenticatedRequest,
-    @Body() dto: CreateTimeSlotDto,
-  ) {
+  createTimeSlot(@Req() request: AuthRequest, @Body() dto: CreateTimeSlotDto) {
     return this.timeSlotsService.createTimeSlot({
       mentorId: request.user.sub,
       startTime: dto.startTime,
