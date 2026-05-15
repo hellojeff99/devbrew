@@ -43,4 +43,10 @@ export class CoffeeChatsController {
       req.user.sub,
     );
   }
+
+  @Patch(':id/reject')
+  @UseGuards(JwtAuthGuard)
+  reject(@Req() req: AuthRequest, @Param('id', ParseIntPipe) id: number) {
+    return this.coffeeChatsService.rejectCoffeeChat(id, req.user.sub);
+  }
 }

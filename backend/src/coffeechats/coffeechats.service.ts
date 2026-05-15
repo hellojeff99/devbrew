@@ -106,4 +106,42 @@ export class CoffeeChatsService {
     });
     return result;
   }
+
+  async rejectCoffeeChat(coffeeChatId: number, mentorId: number) {
+    const chat = await this.prisma.coffeeChat.findUnique({
+      where: { id: coffeeChatId },
+    });
+
+    if (!chat) {
+      throw new NotFoundException('CoffeeChat not found');
+    }
+
+    if (chat.mentorId !== mentorId) {
+      throw new ForbiddenException('Not your request');
+    }
+
+    if (chat.status !== CoffeeChatStatus.PENDING) {
+      throw new BadRequestException('Already processed');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      await tx.coffeeChat.update({
+        where: { id: coffeeChatId },
+        data: {
+          status: CoffeeChatStatus.REJECTED,
+        },
+      });
+
+      await tx.mentorTimeSlot.update({
+        where: { id: chat.timeSlotId },
+        data: {
+          isReserved: false,
+        },
+      });
+
+      return {
+        message: 'Rejected successfully',
+      };
+    });
+  }
 }
