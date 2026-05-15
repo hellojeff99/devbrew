@@ -6,14 +6,18 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CoffeeChatStatus } from '@prisma/client';
+import { ChatService } from '../chat/chat.service';
 
 type CreateCoffeeChatInput = {
   timeSlotId: number;
   menteeId: number;
 };
 @Injectable()
-export class CoffeechatsService {
-  constructor(private readonly prisma: PrismaService) {}
+export class CoffeeChatsService {
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly chatService: ChatService,
+  ) {}
 
   async createCoffeeChat(input: CreateCoffeeChatInput) {
     const slot = await this.prisma.mentorTimeSlot.findUnique({
@@ -71,6 +75,34 @@ export class CoffeechatsService {
           status: CoffeeChatStatus.PENDING,
         },
       });
+    });
+    return result;
+  }
+
+  async approveCoffeeChat(coffeeChatId: number, mentorId: number) {
+    const chat = await this.prisma.coffeeChat.findUnique({
+      where: { id: coffeeChatId },
+    });
+
+    if (!chat) {
+      throw new NotFoundException('CoffeeChat not found');
+    }
+
+    if (chat.mentorId !== mentorId) {
+      throw new ForbiddenException('Not your request');
+    }
+
+    if (chat.status !== CoffeeChatStatus.PENDING) {
+      throw new BadRequestException('Already processed');
+    }
+
+    const result = await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.coffeeChat.update({
+        where: { id: coffeeChatId },
+        data: { status: CoffeeChatStatus.APPROVED },
+      });
+      await this.chatService.createCharRoom(coffeeChatId);
+      return updated;
     });
     return result;
   }

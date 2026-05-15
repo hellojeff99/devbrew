@@ -1,7 +1,16 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CreateCoffeeChatDto } from './dto/create_coffeechat.dto';
-import { CoffeechatsService } from './coffeechats.service';
+import { CoffeeChatsService } from './coffeechats.service';
 
 type AuthRequest = Request & {
   user: {
@@ -11,15 +20,27 @@ type AuthRequest = Request & {
 };
 
 @Controller('coffeechats')
-export class CoffeechatsController {
-  constructor(private readonly coffeechatsService: CoffeechatsService) {}
+export class CoffeeChatsController {
+  constructor(private readonly coffeeChatsService: CoffeeChatsService) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
   create(@Req() req: AuthRequest, @Body() dto: CreateCoffeeChatDto) {
-    return this.coffeechatsService.createCoffeeChat({
+    return this.coffeeChatsService.createCoffeeChat({
       timeSlotId: dto.timeSlotId,
       menteeId: req.user.sub,
     });
+  }
+
+  @Patch(':id/approve')
+  @UseGuards(JwtAuthGuard)
+  approve(
+    @Req() req: AuthRequest,
+    @Param('id', ParseIntPipe) coffeeChatId: number,
+  ) {
+    return this.coffeeChatsService.approveCoffeeChat(
+      coffeeChatId,
+      req.user.sub,
+    );
   }
 }

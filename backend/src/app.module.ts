@@ -8,7 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { MentorsModule } from './mentors/mentors.module';
 import { TimeSlotsModule } from './time-slots/time-slots.module';
-import { CoffeechatsModule } from './coffeechats/coffeechats.module';
+import { CoffeeChatsModule } from './coffeechats/coffeechats.module';
 
 @Module({
   imports: [
@@ -17,7 +17,7 @@ import { CoffeechatsModule } from './coffeechats/coffeechats.module';
     AuthModule,
     MentorsModule,
     TimeSlotsModule,
-    CoffeechatsModule,
+    CoffeeChatsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
