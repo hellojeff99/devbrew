@@ -26,6 +26,17 @@ export default function SocketTestPage() {
       console.log("connect error", error.message);
     });
 
+    socket.emit(
+      "join_room",
+      {
+        roomId: 1,
+      },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (response: any) => {
+        console.log(response);
+      },
+    );
+
     return () => {
       socket.disconnect();
     };
