@@ -11,12 +11,10 @@ import {
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CreateCoffeeChatDto } from './dto/create_coffeechat.dto';
 import { CoffeeChatsService } from './coffeechats.service';
+import { JwtPayload } from '../auth/jwt.strategy';
 
 type AuthRequest = Request & {
-  user: {
-    sub: number;
-    role: string;
-  };
+  user: JwtPayload;
 };
 
 @Controller('coffeechats')
