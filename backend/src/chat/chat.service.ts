@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -49,5 +50,21 @@ export class ChatService {
     }
 
     return room;
+  }
+
+  async createMessage(chatRoomId: number, senderId: number, content: string) {
+    const normalized = content?.trim();
+
+    if (!normalized) {
+      throw new BadRequestException('Empty message');
+    }
+
+    return this.prisma.message.create({
+      data: {
+        chatRoomId,
+        senderId,
+        content: normalized,
+      },
+    });
   }
 }
