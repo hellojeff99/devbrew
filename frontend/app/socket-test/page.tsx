@@ -37,6 +37,12 @@ export default function SocketTestPage() {
       },
     );
 
+    socket.emit("send_message", {
+      roomId: 1,
+
+      content: "hello",
+    });
+
     return () => {
       socket.disconnect();
     };

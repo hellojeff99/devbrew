@@ -4,11 +4,12 @@ import {
   OnGatewayConnection,
   SubscribeMessage,
   WebSocketGateway,
+  WebSocketServer,
 } from '@nestjs/websockets';
 
 import { JwtService } from '@nestjs/jwt';
 
-import type { Socket } from 'socket.io';
+import { Server, type Socket } from 'socket.io';
 
 import { ForbiddenException, UnauthorizedException } from '@nestjs/common';
 
@@ -25,6 +26,8 @@ type AuthenticatedSocket = Socket & {
   },
 })
 export class ChatGateway implements OnGatewayConnection {
+  @WebSocketServer()
+  server!: Server;
   constructor(
     private readonly jwtService: JwtService,
     private readonly chatService: ChatService,
@@ -78,6 +81,34 @@ export class ChatGateway implements OnGatewayConnection {
     return {
       success: true,
       roomId,
+    };
+  }
+
+  @SubscribeMessage('send_message')
+  async handleSendMessage(
+    @ConnectedSocket()
+    client: AuthenticatedSocket,
+
+    @MessageBody()
+    payload: {
+      roomId: number;
+      content: string;
+    },
+  ) {
+    const { roomId, content } = payload;
+
+    // 1. message persistence
+    const message = await this.chatService.createMessage(
+      roomId,
+      client.user.sub,
+      content,
+    );
+
+    // 2. emit after persistence
+    this.server.to(`room:${roomId}`).emit('receive_message', message);
+
+    return {
+      success: true,
     };
   }
 }
