@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Param,
   ParseIntPipe,
   Patch,
@@ -8,10 +9,10 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
-import { CreateCoffeeChatDto } from './dto/create_coffeechat.dto';
-import { CoffeeChatsService } from './coffeechats.service';
 import { JwtPayload } from '../auth/jwt.strategy';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { CoffeeChatsService } from './coffeechats.service';
+import { CreateCoffeeChatDto } from './dto/create_coffeechat.dto';
 
 type AuthRequest = Request & {
   user: JwtPayload;
@@ -46,5 +47,17 @@ export class CoffeeChatsController {
   @UseGuards(JwtAuthGuard)
   reject(@Req() req: AuthRequest, @Param('id', ParseIntPipe) id: number) {
     return this.coffeeChatsService.rejectCoffeeChat(id, req.user.sub);
+  }
+
+  @Get('/mentor')
+  @UseGuards(JwtAuthGuard)
+  getMentorCoffeeChats(@Req() req: AuthRequest) {
+    return this.coffeeChatsService.getCoffeeChatsByMentor(req.user.sub);
+  }
+
+  @Get('/mentee')
+  @UseGuards(JwtAuthGuard)
+  getMenteeCoffeeChats(@Req() req: AuthRequest) {
+    return this.coffeeChatsService.getCoffeeChatsByMentee(req.user.sub);
   }
 }

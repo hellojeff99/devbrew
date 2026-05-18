@@ -4,9 +4,9 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
 import { CoffeeChatStatus } from '@prisma/client';
 import { ChatService } from '../chat/chat.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 type CreateCoffeeChatInput = {
   timeSlotId: number;
@@ -142,6 +142,37 @@ export class CoffeeChatsService {
       return {
         message: 'Rejected successfully',
       };
+    });
+  }
+
+  async getCoffeeChatsByMentor(mentorId: number) {
+    return this.prisma.coffeeChat.findMany({
+      where: {
+        timeSlot: {
+          mentorId,
+        },
+      },
+      include: {
+        mentee: true,
+        timeSlot: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+  }
+
+  async getCoffeeChatsByMentee(menteeId: number) {
+    return this.prisma.coffeeChat.findMany({
+      where: {
+        menteeId,
+      },
+      include: {
+        timeSlot: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
   }
 }
