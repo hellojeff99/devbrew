@@ -164,15 +164,14 @@ export class CoffeeChatsService {
 
   async getCoffeeChatsByMentee(menteeId: number) {
     return this.prisma.coffeeChat.findMany({
-      where: {
-        menteeId,
-      },
+      where: { menteeId },
       include: {
         timeSlot: true,
+        mentor: {
+          select: { name: true, headline: true },
+        },
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy: { createdAt: 'desc' },
     });
   }
 }
