@@ -50,6 +50,7 @@ model ChatRoom {
   id           Int        @id @default(autoincrement())
   coffeeChatId Int        @unique
   createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
   coffeeChat   CoffeeChat @relation(fields: [coffeeChatId], references: [id])
   messages     Message[]
 }
