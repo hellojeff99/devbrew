@@ -3,13 +3,14 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
 import { User } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
-import { SignupDto } from './dto/signup.dto';
-import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
+import { UsersService } from '../users/users.service';
+import { LoginResDto } from './dto/login-res.dto';
 import { LoginDto } from './dto/login.dto';
+import { SignupDto } from './dto/signup.dto';
 
 @Injectable()
 export class AuthService {
@@ -36,7 +37,9 @@ export class AuthService {
     });
   }
 
-  async login(loginDto: LoginDto): Promise<{ accessToken: string }> {
+  async login(
+    loginDto: LoginDto,
+  ): Promise<{ accessToken: string; user: LoginResDto }> {
     const user = await this.usersService.findByEmail(loginDto.email);
 
     if (!user) {
@@ -52,11 +55,19 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    // auth.service.ts — signAsync payload에 name 추가
     const accessToken = await this.jwtService.signAsync({
       sub: user.id,
       role: user.role,
+      name: user.name,
     });
 
-    return { accessToken };
+    const loginResDto: LoginResDto = {
+      id: user.id,
+      role: user.role,
+      name: user.name,
+    };
+
+    return { accessToken, user: loginResDto };
   }
 }
