@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { ChatRoomDto } from './chat-room.dto';
+import { ChatRoomDto } from './dto/chat-room.dto';
 
 @Injectable()
 export class ChatService {
